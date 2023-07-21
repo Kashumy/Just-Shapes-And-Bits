@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html onclick="document.documentElement.requestFullscreen(); document.getElementById('st1').play()">
+    <script src="/Just shapes and bits /map.js"></script>
+<head>
+  <audio id="st1" src="/Just shapes and bits /soundtrack.mp3"></audio>
+  <title>Just Shapes and Bits - Game</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: transparent ;
+      overflow: hidden;
+      width :100%;
+      position :fixed ;
+      
+      
+    }
+    
+    .btn2 {
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: #33D4FF;
+  color: #FFFFFF;
+  font-size: 16px;
+  text-align: center;
+  text-decoration: none;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.btn2:hover {
+  background-color: #29B3DF;
+}
+
+.btn2:active {
+  background-color: #1C7AA4;
+  transform: translateY(1px);
+  box-shadow: none;
+}
+
+.btn2:focus {
+  outline: none;
+}
+
+    @keyframes pulse{
+      0%{
+        scale: 1.1;
+        
+      }
+      100%{
+        
+      }
+    }
+    @keyframes pulse2{
+      0%{
+        background :#990040;
+        scale: 1.05;
+      }
+      100%{
+        
+      }
+    }
+    #game-board {
+      width: 100%;
+      height: 100vh;
+      background-color: #000000;
+      position: relative;
+      animation : pulse2 1s infinite ;
+      
+     
+    }
+    .hide{
+      opacity :0.01;
+    }
+    #game-over {
+      display: none;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 24px;
+      font-weight: bold;
+      border-collapse: separate;
+      border-spacing: 8px;
+      color: #FF0084;
+      
+    }
+    .blue-cube {
+      width: 15px;
+      height: 15px;
+      background-color: #00E2FF;
+      position: absolute;
+      z-index: 2;
+      bottom: 0;
+      pointer-events: none; /* Wyłączamy interakcję myszy z kostką gracza */
+    }
+   .blue-clone {
+      width: 20px;
+      height: 20px;
+      background-color: #00E2FF12;
+      position: absolute;
+      z-index: 1;
+      bottom: 0;
+      pointer-events: none; /* Wyłączamy interakcję myszy z kostką gracza */
+    }
+.idk1{
+  background-color :#00C2FFBA;
+}
+.pink-element {
+      
+      position: absolute;
+      z-index: 5;
+      bottom: 0;
+      left: 50%; /* Center the triangle horizontally */
+      
+    }
+
+    @keyframes rotateAndBounce {
+      0% {
+        transform: rotate(0);
+      }
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+    .container {
+      
+      transform: translate(-50%, -50%);
+      top: 50vh;
+      left: 50vw;
+      width: 80vw;
+      height: 70vh;
+      
+     /* border : 2px dashed #FF33A60F;*/
+      position: absolute;
+    }
+    .shape1{
+      width: 0;
+      height: 0;
+      border-left: 20px solid transparent;
+      border-right: 20px solid transparent;
+      border-bottom: 35px solid #FF006E;
+      animation: rotateAndBounce 10s infinite;
+    }
+    .shape2{
+      width :50px;
+      height :50px;
+      background :#FF006C;
+    }
+    .shape3 {
+          width: 20px;
+          height: 100%;
+          background: #FF006C;
+        }
+  </style>
+</head>
+<body>
+  <div id="game-board">
+  
+    <div class="container"></div>
+      <div class="blue-cube" id="player"></div>
+    <div style="display :none ; flex-direction :column ;align-items :center ;" id="game-over">Game Over <br> <br><button onclick="reset()" class="btn2" >Reset</button></div>
+  </div>
+
+  <script>
+  function reset(){
+    isGameActive = true;
+    gameOverText.style.display="none"
+    container.innerHTML=""
+    x=innerWidth /2
+    y= innerHeight /2
+    movePlayer()
+    preload()
+  }
+    const gameBoard = document.getElementById('game-board');
+    const gameOverText = document.getElementById('game-over');
+    const playerCube = document.getElementById('player');
+    const container = document.querySelector('.container');
+
+    let isGameActive = true;
+
+    function handleCollision() {
+      isGameActive = false;
+      
+      gameOverText.style.display = 'flex';
+    }
+
+
+  // Add a variable to store the reset delay time
+  let resetDelay = 0;
+let cumulativeDelay=2000;
+  // Function to add the reset delay to subsequent blocks
+  function applyResetDelay(baseDelay) {
+    return baseDelay + cumulativeDelay;
+  }
+  function s(b){
+    delay=b
+  }
+  
+
+  // Function to reset the delay to 0 when "Reset delay" is encountered
+  function handleResetDelay() {
+    resetDelay += 6000; // Increase the reset delay by 6 seconds (6000 milliseconds)
+  }
+setTimeout(movePlayer ,200)
+  
+    function createBlock(delay, startX, startY, endX, endY, duration,type) {
+      if (delay === '"Reset delay"') {
+        handleResetDelay();
+        return;
+      }
+      
+      const totalDelay = applyResetDelay(Number(delay));
+
+      const block = document.createElement('div');
+      if (type == 2) {
+      block.className = 'pink-element hide shape2';
+      }else if(type==3){
+      block.className = 'pink-element hide shape3';
+      }else {
+      block.className = 'pink-element hide shape1';
+      }
+      block.style.left = startX + '';
+      block.style.top = startY + '';
+      container.appendChild(block);
+
+      setTimeout(() => {
+        block.classList.remove('hide');
+      }, totalDelay);
+
+      setTimeout(() => {
+        const animationDuration = duration + 's';
+        block.style.transition = `left ${animationDuration} linear, top ${animationDuration} linear`;
+        block.style.left = endX + '';
+        block.style.top = endY + '';
+
+        setTimeout(() => {
+          block.remove();
+        }, duration * 1000);
+      }, totalDelay);
+    }
+
+  // Rest of your code remains unchanged
+  // ...
+
+const containerRect = container.getBoundingClientRect();
+const playerWidth = playerCube.clientWidth;
+const playerHeight = playerCube.clientHeight;
+var playerX = Math.max(containerRect.left, Math.min(containerRect.right - playerWidth, 50 - playerWidth / 2));
+    var playerY = Math.max(containerRect.top, Math.min(containerRect.bottom ,  - playerHeight / 2));
+
+    playerCube.style.left = playerX + 'px';
+    playerCube.style.top = playerY+200 + 'px';
+    
+
+   /* function movePlayer(event) {
+  if (isGameActive) {
+    const containerRect = container.getBoundingClientRect();
+    const touchX = event.touches[0].clientX;
+    const touchY = event.touches[0].clientY;
+
+    // Ustawiamy granice poruszania się gracza w obrębie diva "container".
+    const playerWidth = playerCube.clientWidth;
+    const playerHeight = playerCube.clientHeight;
+    const playerX = Math.max(containerRect.left, Math.min(containerRect.right - playerWidth, touchX - playerWidth / 2));
+    const playerY = Math.max(containerRect.top, Math.min(containerRect.bottom - playerHeight, touchY - playerHeight / 2));
+
+    playerCube.style.left = playerX + 'px';
+    playerCube.style.top = playerY + 'px';
+    
+  /*  var clone = document.createElement('div');
+    container.appendChild(clone);
+    clone.style.left = playerX - 50 + 'px';
+    clone.style.top = playerY - 100 + 'px';
+    clone.className = "blue-clone";
+    
+    // Remove the clone after 2 seconds
+    setTimeout(() => {
+      clone.remove();
+    }, 1000);*//*
+  }
+}*/
+var x=200;
+var y=200;
+function movePlayer() {
+  if (isGameActive) {
+    const containerRect = container.getBoundingClientRect();
+    
+
+    // Ustawiamy granice poruszania się gracza w obrębie diva "container".
+    const playerWidth = playerCube.clientWidth;
+    const playerHeight = playerCube.clientHeight;
+    const playerX = Math.max(containerRect.left, Math.min(containerRect.right - playerWidth, x - playerWidth / 2));
+    const playerY = Math.max(containerRect.top, Math.min(containerRect.bottom - playerHeight, y - playerHeight / 2));
+
+    playerCube.style.left = playerX + 'px';
+    playerCube.style.top = playerY + 'px';
+    
+    if(x>containerRect.width){
+      x -= 10
+    }
+    if (x<containerRect.left-1) {
+      x += 10
+    }
+    if (y > containerRect.height + 100) {
+      y -= 10
+    }
+    if (y < containerRect.top - 1) {
+      y += 10
+    }
+  /*  var clone = document.createElement('div');
+    container.appendChild(clone);
+    clone.style.left = playerX - 50 + 'px';
+    clone.style.top = playerY - 100 + 'px';
+    clone.className = "blue-clone";
+    
+    // Remove the clone after 2 seconds
+    setTimeout(() => {
+      clone.remove();
+    }, 1000);*/
+  }
+}
+
+
+    
+
+    preload();
+  /*  setTimeout(function (){
+      preload()
+    },1000)*/
+
+    gameBoard.addEventListener('touchmove', movePlayer);
+    setTimeout(loop,200)
+    function loop(){
+      
+        const playerRect = playerCube.getBoundingClientRect();
+        const blocks = document.querySelectorAll('.pink-element');
+
+        blocks.forEach((block) => {
+          if(hurt==0){
+          const blockRect = block.getBoundingClientRect();
+          if (
+            playerRect.left < blockRect.right &&
+            playerRect.right > blockRect.left &&
+            playerRect.top < blockRect.bottom &&
+            playerRect.bottom > blockRect.top
+          ) {
+            handleCollision();
+          }
+          }
+        });
+        
+        setTimeout(loop,20)
+    }
+  </script>
+</body>
+</html>
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family : sans-serif ;
+    }
+
+.controls-container {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      display: grid;
+      grid-template-columns: repeat(3, 40px);
+      grid-gap: 2px;
+      background-color: rgba(0, 0, 0, 0.1);
+      padding: 5px;
+      border-radius: 10px;
+    }
+
+    .arrow {
+      width: 30px;
+      height: 30px;
+      background-color: #33D4FF45; 
+      border-radius: 20%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      font-size: 24px;
+      margin: 3px;
+      cursor: pointer;
+    }
+
+    #up {
+      transform: rotate(-90deg);
+    }
+
+    #down {
+      transform: rotate(90deg);
+    }
+
+    #left {
+      transform: rotate(180deg);
+    }
+    .null{
+      width: 30px;
+      height: 30px;
+      
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color :white ;
+      margin: 1px;
+      cursor: pointer;
+    }
+    *{
+      user-select :none ;
+    }
+  </style>
+
+  
+  <!-- Kontener na przyciski sterowania -->
+  <div class="controls-container">
+  <div class="null" ></div>
+    <div class="arrow" onclick="clickup()" id="up">></div>
+  <div class="null" ><p style="background-color:#33D4FF45;padding: 5px">A</p></div>
+    <div class="arrow"  onclick="clickleft()" id="left">></div>
+  <div class="null" ></div>
+    <div class="arrow" onclick="clickright()" id="right">></div>
+  <div class="null" ></div>
+    <div class="arrow" onclick="clickdown()" id="down">></div>
+  <div class="null" ></div>
+  </div>
+  
+
+  <script>
+  var clickCounter = 0;
+    var up = document.getElementById('up');
+    var down = document.getElementById('down');
+    var left = document.getElementById('left');
+    var right = document.getElementById('right');
+    var toup = 0;
+    var todown = 0;
+    var toleft = 0;
+    var toright = 0;
+    var dashClickThreshold = 2; // Liczba kliknięć do wykonania dashu
+    
+    function clickup() {
+      clickCounter++;
+      if (clickCounter === dashClickThreshold) {
+        dashup();
+        clickCounter = 0;
+        hurt=1;
+        document.querySelector('.blue-cube').classList.add('idk1')
+        setTimeout(function(){
+          hurt=0;
+          document.querySelector('.blue-cube').classList.remove('idk1')
+        },1000)
+      }
+      setTimeout(function (){
+        clickCounter = 0;
+      },100)
+    }
+
+    function clickdown() {
+      clickCounter++;
+      if (clickCounter === dashClickThreshold) {
+        dashdown();
+        clickCounter = 0;
+        hurt = 1;
+        document.querySelector('.blue-cube').classList.add('idk1')
+        setTimeout(function() {
+          hurt = 0;
+          document.querySelector('.blue-cube').classList.remove('idk1')
+        }, 1000)
+      }
+      setTimeout(function() {
+        clickCounter = 0;
+      }, 100)
+    }
+function clickleft() {
+      clickCounter++;
+      if (clickCounter === dashClickThreshold) {
+        dashleft();
+        clickCounter = 0;
+        hurt = 1;
+        document.querySelector('.blue-cube').classList.add('idk1')
+        setTimeout(function() {
+          hurt = 0;
+          document.querySelector('.blue-cube').classList.remove('idk1')
+        }, 1000)
+      }
+      setTimeout(function() {
+        clickCounter = 0;
+      }, 100)
+    }
+
+    function clickright() {
+      clickCounter++;
+      if (clickCounter === dashClickThreshold) {
+        dashright();
+        
+        hurt = 1;
+        document.querySelector('.blue-cube').classList.add('idk1')
+        setTimeout(function() {
+          hurt = 0;
+          document.querySelector('.blue-cube').classList.remove('idk1')
+        }, 1000)
+        clickCounter = 0;
+      }
+      setTimeout(function() {
+        clickCounter = 0;
+      }, 100)
+    }
+
+
+function dashup(){
+  y -= 100;
+  movePlayer()
+}
+function dashleft() {
+  x -= 100;
+  movePlayer()
+}
+function dashdown() {
+  y += 100;
+  movePlayer()
+}
+function dashright() {
+  x += 100;
+  movePlayer()
+}
+    up.addEventListener('ontouchstart' in document ? 'touchstart' : 'mousedown', e => {
+      toup = 1;
+    });
+
+    up.addEventListener('ontouchend' in document ? 'touchend' : 'mouseup', e => {
+      toup = 0;
+    });
+
+    down.addEventListener('ontouchstart' in document ? 'touchstart' : 'mousedown', e => {
+      todown = 1;
+    });
+
+    down.addEventListener('ontouchend' in document ? 'touchend' : 'mouseup', e => {
+      todown = 0;
+    });
+
+    left.addEventListener('ontouchstart' in document ? 'touchstart' : 'mousedown', e => {
+      toleft = 1;
+    });
+
+    left.addEventListener('ontouchend' in document ? 'touchend' : 'mouseup', e => {
+      toleft = 0;
+    });
+
+    right.addEventListener('ontouchstart' in document ? 'touchstart' : 'mousedown', e => {
+      toright = 1;
+    });
+
+    right.addEventListener('ontouchend' in document ? 'touchend' : 'mouseup', e => {
+      toright = 0;
+    });
+
+    setTimeout(pentla, 200);
+
+    function pentla() {
+      if (toup === 1) {
+        // Tutaj dodaj kod dla ruchu w górę
+        y-=4;
+        movePlayer()
+        console.log("Ruch w górę");
+        
+      } else if (todown === 1) {
+        // Tutaj dodaj kod dla ruchu w dół
+        y += 4;
+        movePlayer()
+        console.log("Ruch w dół");
+      } else if (toleft === 1) {
+        // Tutaj dodaj kod dla ruchu w lewo
+        x -= 4;
+        movePlayer()
+        console.log("Ruch w lewo");
+      } else if (toright === 1) {
+        // Tutaj dodaj kod dla ruchu w prawo
+        x += 4;
+        movePlayer()
+        console.log("Ruch w prawo");
+      }
+      requestAnimationFrame(pentla);
+    }
+    var hurt=0;
+  </script>
+
